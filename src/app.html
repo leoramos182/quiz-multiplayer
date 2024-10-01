@@ -40,6 +40,11 @@
           margin-top: 20px;
           text-align: center;
       }
+      .disabled {
+          background-color: #ccc;
+          cursor: not-allowed;
+          pointer-events: none;
+      }
   </style>
 </head>
 <body>
@@ -79,7 +84,11 @@
             optionElement.classList.add('option');
             optionElement.innerText = option;
             optionElement.onclick = () => {
-                socket.emit('answer', { playerId: socket.id, answer: option });
+                socket.emit('answer', {
+                    playerId: socket.id,
+                    answer: option,
+                    id: playerId
+                });
             };
             optionsContainer.appendChild(optionElement);
         });
@@ -88,11 +97,22 @@
         resultElement.innerHTML = '';
     });
 
+    function disableOptions() {
+        const options = document.querySelectorAll('.option');
+        options.forEach(option => {
+            option.classList.add('disabled');  // Add a disabled class for visual effects
+            option.onclick = null;  // Disable click by removing event listener
+        });
+    }
+
     // Display the end of the game and the results
     socket.on('end', (data) => {
+        console.log(data.scores)
         const resultElement = document.getElementById('result');
-        let scoresText = data.scores.map(player => `Player ${playerId}: ${player.score}`).join('<br>');
+        let scoresText = data.scores.map(player => `Player ${player.id}: ${player.score}`).join('<br>');
         resultElement.innerHTML = `<strong>Game Over!</strong><br>${scoresText}`;
+
+        disableOptions();
     });
 
     // Handle full game
