@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Game</title>
+  <style>
+      body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 20px;
+          background-color: #f4f4f4;
+      }
+      h1 {
+          text-align: center;
+      }
+      #quiz-container {
+          width: 50%;
+          margin: 0 auto;
+          padding: 20px;
+          background-color: white;
+          border-radius: 8px;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      .option {
+          display: block;
+          margin: 10px 0;
+          padding: 10px;
+          background-color: #e0e0e0;
+          border-radius: 4px;
+          cursor: pointer;
+      }
+      .option:hover {
+          background-color: #ccc;
+      }
+      #result {
+          margin-top: 20px;
+          text-align: center;
+      }
+  </style>
+</head>
+<body>
+<h1>Quiz Game</h1>
+<div id="quiz-container">
+  <p id="question">Waiting for the question...</p>
+  <div id="options"></div>
+  <div id="result"></div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+
+    socket.on('welcome', (data) => {
+        console.log(data.message);
+    });
+
+    // Display the question and options
+    socket.on('question', (data) => {
+        const questionElement = document.getElementById('question');
+        const optionsContainer = document.getElementById('options');
+        const resultElement = document.getElementById('result');
+
+        // Update the question
+        questionElement.innerText = data.question;
+
+        // Clear previous options
+        optionsContainer.innerHTML = '';
+
+        // Display new options as buttons
+        data.options.forEach(option => {
+            const optionElement = document.createElement('div');
+            optionElement.classList.add('option');
+            optionElement.innerText = option;
+            optionElement.onclick = () => {
+                socket.emit('answer', { answer: option });
+            };
+            optionsContainer.appendChild(optionElement);
+        });
+
+        // Clear the result message
+        resultElement.innerHTML = '';
+    });
+
+    // Display the end of the game and the results
+    socket.on('end', (data) => {
+        const resultElement = document.getElementById('result');
+        let scoresText = data.scores.map(player => `Player ${player.playerId}: ${player.score}`).join('<br>');
+        resultElement.innerHTML = `<strong>Game Over!</strong><br>${scoresText}`;
+    });
+
+    // Handle full game
+    socket.on('full', (data) => {
+        alert(data.message);
+    });
+</script>
+</body>
+</html>
