@@ -31,7 +31,7 @@ io.on('connection', (socket) => {
         // Notify player
         socket.emit('welcome', { message: 'Welcome to the quiz!', playerId: socket.id });
 
-        if (players.length === 2) {
+        if (players.length ===2) {
             // Start the quiz
             startQuiz();
         }
@@ -41,7 +41,9 @@ io.on('connection', (socket) => {
     }
 
     socket.on('answer', (data) => {
+        console.log(data)
         const { playerId, answer } = data;
+        console.log(playerId)
 
         if (quizData[currentQuestionIndex].answer === answer) {
             users[playerId].score += 1;
